@@ -1,5 +1,6 @@
 require 'pp'
 require 'fileutils'
+require 'optparse'
 
 def dat_files
   first_run_dir = Dir.glob("_input/*").first
@@ -62,12 +63,15 @@ def output( calculated, outfile )
   end
 end
 
-
-FREQ_FILES.each do |dat|
-  analyze(dat, 0.0)
+option = { missing_val: nil }
+OptionParser.new do |opt|
+  opt.on('-f', 'Replace missing values with 0. Set this option for frequency data.') {|v| option[:missing_val] = 0 }
+  opt.on('-b', '--binning=BINSIZE', 'Take binning with bin size BINSIZE.') {|v| option[:binning] = v.to_f }
+  opt.on('-l', '--log-binning=[BINBASE]', 'Take logarithmic binning with the base of logarithm BINBASE. (default: 2)') {|v| option[:log_binning] = (v or 2).to_f }
+  opt.parse!(ARGV)
 end
 
-CORR_FILES.each do |dat|
-  analyze(dat, nil)
-end
+raise "-b and -l options are incompatible" if option.has_key?(:binning) and option.has_key?(:log_binning)
+
+p option
 
