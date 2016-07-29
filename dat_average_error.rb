@@ -68,6 +68,8 @@ OptionParser.new do |opt|
   opt.on('-f', 'Replace missing values with 0. Set this option for frequency data.') {|v| option[:missing_val] = 0 }
   opt.on('-b', '--binning=BINSIZE', 'Take binning with bin size BINSIZE.') {|v| option[:binning] = v.to_f }
   opt.on('-l', '--log-binning=[BINBASE]', 'Take logarithmic binning with the base of logarithm BINBASE. (default: 2)') {|v| option[:log_binning] = (v or 2).to_f }
+  opt.on('-o', '--output=FILENAME', 'Output file name') {|v| option[:outfile] = v }
+
   opt.parse!(ARGV)
 end
 
