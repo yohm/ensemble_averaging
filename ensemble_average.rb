@@ -1,26 +1,89 @@
 require 'pp'
 require 'fileutils'
 require 'optparse'
+require 'pry'
 
-def dat_files
-  first_run_dir = Dir.glob("_input/*").first
-  dats = Dir.glob(File.join(first_run_dir, "*.dat"))
-  dats.map {|dat| File.basename(dat) }
-end
+class Table
 
-def collect_files(filename)
-  Dir.glob("_input/*/#{filename}")
-end
+  # If we have the following input file
+  #   0   x01  x02  x03
+  #   1   x11  x12  x13
+  #   2   x21  x22  x23
+  #   ...
+  # The data should be
+  #   keys = [0,1,2,...]
+  #   columns = [
+  #              [x01,x11,x21],
+  #              [x02,x12,x22],
+  #              [x03,x13,x23],
+  #              ...
+  #             ]
+  #
+  attr_accessor :keys, :columns
 
-def load_file(filename)
-  parsed = {}
-  File.open(filename).each do |line|
-    next if line =~ /^\#/
-    mapped = line.split.map(&:to_f)
-    parsed[ mapped[0] ] = mapped[1..-1]
+  def initialize
+    @keys = []
+    @columns = nil
   end
-  parsed
+
+  def self.load_file(filename)
+    data = self.new
+    File.open(filename).each do |line|
+      next if line =~ /^\#/
+      mapped = line.split.map(&:to_f)
+      data.keys << mapped[0]
+      vals = mapped[1..-1]
+      data.columns ||= Array.new( vals.size ) { Array.new }
+      vals.each_with_index do |x,col|
+        data.columns[col] << x
+      end
+    end
+    data
+  end
+
+  # take linear binning against data
+  # if is_histo is true, divide the values of every bin by its bin size
+  # return binned data
+  def linear_binning( bin_size, is_histo )
+    val_to_binidx = lambda {|v|
+      (v.to_f / bin_size).floor
+    }
+    binidx_to_val = lambda {|idx|
+      idx * bin_size
+    }
+    binidx_to_binsize = lambda {|idx|
+      bin_size
+    }
+
+    binning( val_to_binidx, binidx_to_val, binidx_to_binsize, is_histo )
+  end
+
+  private
+  def binning( val_to_binidx, binidx_to_val, binidx_to_binsize, is_histo )
+    binned_data = self.class.new
+    sorted_bin_idxs = @keys.map(&val_to_binidx).uniq.sort
+    binned_data.keys = sorted_bin_idxs.map(&binidx_to_val)
+
+    binned_data.columns = @columns.map do |column|
+      grouped = Hash.new {|h,k| h[k] = [] }
+      @keys.zip( column ) do |key, column|
+        bin_idx = val_to_binidx.call(key)
+        grouped[bin_idx] << column
+      end
+      averaged = {}
+      grouped.each do |bin_idx,val|
+        if is_histo
+          averaged[bin_idx] = val.inject(:+) / binidx_to_binsize.call(bin_idx)
+        else
+          averaged[bin_idx] = val.inject(:+) / val.size
+        end
+      end
+      sorted_bin_idxs.map {|key| averaged[key] || 0 }
+    end
+    binned_data
+  end
 end
+
 
 def average_error(values)
   average = values.inject(:+).to_f / values.size
