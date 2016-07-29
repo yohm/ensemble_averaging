@@ -41,6 +41,14 @@ class Table
     data
   end
 
+  def to_s
+    sio = StringIO.new
+    @keys.zip( *@columns ) do |args|
+      sio.puts args.join(' ')
+    end
+    sio.string
+  end
+
   # take linear binning against data
   # if is_histo is true, divide the values of every bin by its bin size
   # return binned data
