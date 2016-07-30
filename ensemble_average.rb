@@ -50,7 +50,7 @@ class Table
   end
 
   # take linear binning against data
-  # if is_histo is true, divide the values of every bin by its bin size
+  # if is_histo is true, normalize the frequency of every bin by its bin size
   # return binned data
   def linear_binning( bin_size, is_histo )
     val_to_binidx = lambda {|v|
@@ -61,6 +61,23 @@ class Table
     }
     binidx_to_binsize = lambda {|idx|
       bin_size
+    }
+
+    binning( val_to_binidx, binidx_to_val, binidx_to_binsize, is_histo )
+  end
+
+  # take logarithmic binning against data
+  # if is_histo is true, normalized the frequency of every bin by its bin size
+  # return binned data
+  def log_binning( bin_base, is_histo )
+    val_to_binidx = lambda {|v|
+      ( Math.log(v)/Math.log(bin_base) ).floor
+    }
+    binidx_to_val = lambda {|idx|
+      bin_base ** idx
+    }
+    binidx_to_binsize = lambda {|idx|
+      bin_base ** idx
     }
 
     binning( val_to_binidx, binidx_to_val, binidx_to_binsize, is_histo )
