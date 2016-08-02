@@ -217,10 +217,15 @@ elsif option[:log_binning]
   input_tables.map! {|table| table.log_binning( option[:log_binning], option[:is_histo] ) }
 end
 
+outio = $stdout
+if option[:outfile]
+  outio = File.open(option[:outfile], 'w')
+end
+
 if input_tables.size > 1
   calc = Table.averaging( input_tables, option[:is_histo] )
-  puts calc.to_s
+  outio.puts calc.to_s
 else
-  puts input_tables.first.to_s
+  outio.puts input_tables.first.to_s
 end
 
