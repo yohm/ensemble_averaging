@@ -1,6 +1,7 @@
 require 'pp'
 require 'fileutils'
 require 'optparse'
+require 'stringio'
 
 class Table
 
