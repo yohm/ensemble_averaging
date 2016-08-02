@@ -1,7 +1,6 @@
 require 'pp'
 require 'fileutils'
 require 'optparse'
-require 'pry'
 
 class Table
 
