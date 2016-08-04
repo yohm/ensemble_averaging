@@ -168,34 +168,36 @@ class Table
   end
 end
 
+if __FILE__ == $0
 
-option = { is_histo: false }
-OptionParser.new do |opt|
-  opt.on('-f', 'Set this option for frequency data. Missing values are replaced with 0.' ) {|v| option[:is_histo] = true }
-  opt.on('-b', '--binning=BINSIZE', 'Take binning with bin size BINSIZE.') {|v| option[:binning] = v.to_f }
-  opt.on('-l', '--log-binning=[BINBASE]', 'Take logarithmic binning with the base of logarithm BINBASE. (default: 2)') {|v| option[:log_binning] = (v or 2).to_f }
-  opt.on('-o', '--output=FILENAME', 'Output file name') {|v| option[:outfile] = v }
-  opt.parse!(ARGV)
-end
+  option = { is_histo: false }
+  OptionParser.new do |opt|
+    opt.on('-f', 'Set this option for frequency data. Missing values are replaced with 0.' ) {|v| option[:is_histo] = true }
+    opt.on('-b', '--binning=BINSIZE', 'Take binning with bin size BINSIZE.') {|v| option[:binning] = v.to_f }
+    opt.on('-l', '--log-binning=[BINBASE]', 'Take logarithmic binning with the base of logarithm BINBASE. (default: 2)') {|v| option[:log_binning] = (v or 2).to_f }
+    opt.on('-o', '--output=FILENAME', 'Output file name') {|v| option[:outfile] = v }
+    opt.parse!(ARGV)
+  end
 
-raise "-b and -l options are incompatible" if option.has_key?(:binning) and option.has_key?(:log_binning)
+  raise "-b and -l options are incompatible" if option.has_key?(:binning) and option.has_key?(:log_binning)
 
-input_tables = ARGV.map {|f| Table.load_file(f) }
-if option[:binning]
-  input_tables.map! {|table| table.linear_binning( option[:binning], option[:is_histo] ) }
-elsif option[:log_binning]
-  input_tables.map! {|table| table.log_binning( option[:log_binning], option[:is_histo] ) }
-end
+  input_tables = ARGV.map {|f| Table.load_file(f) }
+  if option[:binning]
+    input_tables.map! {|table| table.linear_binning( option[:binning], option[:is_histo] ) }
+  elsif option[:log_binning]
+    input_tables.map! {|table| table.log_binning( option[:log_binning], option[:is_histo] ) }
+  end
 
-outio = $stdout
-if option[:outfile]
-  outio = File.open(option[:outfile], 'w')
-end
+  outio = $stdout
+  if option[:outfile]
+    outio = File.open(option[:outfile], 'w')
+  end
 
-if input_tables.size > 1
-  calc = Table.averaging( input_tables, option[:is_histo] )
-  outio.puts calc.to_s
-else
-  outio.puts input_tables.first.to_s
+  if input_tables.size > 1
+    calc = Table.averaging( input_tables, option[:is_histo] )
+    outio.puts calc.to_s
+  else
+    outio.puts input_tables.first.to_s
+  end
 end
 
