@@ -169,43 +169,12 @@ class Table
 end
 
 
-# set missing_val = nil if you want to ignore the missing value
-def calc_average_and_error(files, missing_val)
-  datas = files.map {|path| load_file(path) }
-  return nil if datas.empty?
-  keys = datas.map(&:keys).flatten.uniq.sort
-  num_col = datas.first[ datas.first.keys.first ].size
-
-  calculated = {}
-  keys.each do |key|
-    calculated[key] = []
-    num_col.times do |col|
-      values = datas.map {|data| data[key] ? data[key][col] : missing_val }.compact
-      calculated[key] += average_error(values)
-    end
-  end
-  calculated
-end
-
-def output( calculated, outfile )
-  outstr = calculated.map {|key,row| key.to_s + ' ' + row.join(' ') }
-  if outfile
-    File.open(outfile, 'w') do |io|
-      io.puts outstr
-      io.flush
-    end
-  else
-    $stdout.puts outstr
-  end
-end
-
 option = { is_histo: false }
 OptionParser.new do |opt|
   opt.on('-f', 'Set this option for frequency data. Missing values are replaced with 0.' ) {|v| option[:is_histo] = true }
   opt.on('-b', '--binning=BINSIZE', 'Take binning with bin size BINSIZE.') {|v| option[:binning] = v.to_f }
   opt.on('-l', '--log-binning=[BINBASE]', 'Take logarithmic binning with the base of logarithm BINBASE. (default: 2)') {|v| option[:log_binning] = (v or 2).to_f }
   opt.on('-o', '--output=FILENAME', 'Output file name') {|v| option[:outfile] = v }
-
   opt.parse!(ARGV)
 end
 
