@@ -56,7 +56,7 @@ ls *.dat | xargs ruby ensemble_averaging.rb
 These are the available command line options.
 
 ```
--o, --output=FILENAME            Output file name
+-o, --output=FILENAME            Output file name. If it is not given, the output is printed to stdout.
 -f                               Set this option for frequency data. Missing values are replaced with 0.
 -b, --binning=BINSIZE            Take binning with bin size BINSIZE.
 -l, --log-binning=[BINBASE]      Take logarithmic binning with the base of logarithm BINBASE. (default: 2)
