@@ -77,7 +77,11 @@ class Table
   # return binned data
   def log_binning( bin_base, is_histo )
     val_to_binidx = lambda {|v|
-      ( Math.log(v)/Math.log(bin_base) ).floor
+      if v <= 0.0
+        nil
+      else
+        ( Math.log(v)/Math.log(bin_base) ).floor
+      end
     }
     binidx_to_val = lambda {|idx|
       bin_base ** idx
@@ -104,7 +108,7 @@ class Table
       grouped = Hash.new {|h,k| h[k] = [] }
       @keys.zip( column ) do |key, column|
         bin_idx = val_to_binidx.call(key)
-        grouped[bin_idx] << column
+        grouped[bin_idx] << column if bin_idx
       end
       averaged = {}
       grouped.each do |bin_idx,val|
