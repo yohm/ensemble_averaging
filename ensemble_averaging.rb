@@ -101,7 +101,7 @@ class Table
   private
   def binning( val_to_binidx, binidx_to_val, binidx_to_binsize, is_histo )
     binned_data = self.class.new
-    sorted_bin_idxs = @keys.map(&val_to_binidx).uniq.sort
+    sorted_bin_idxs = @keys.map(&val_to_binidx).uniq.compact.sort
     binned_data.keys = sorted_bin_idxs.map(&binidx_to_val)
 
     binned_data.columns = @columns.map do |column|
